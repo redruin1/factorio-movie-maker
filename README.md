@@ -1,6 +1,16 @@
 # Factorio Movie Maker
 
-This project encodes a 178x100 3-bit color movie in a [Factorio](http://www.factorio.com) map.
+This project encodes a 178x100 3-bit color movie in a [Factorio](http://www.factorio.com) map, now updated for Factorio version 1.1.57.
+The original script for generating the movies has been updated and preserved, as well as a new method using blueprint strings via my python module [factorio-draftsman].
+
+## Contents:
+
+* `movie.zip` is the save file, compatible with Factorio 0.15.
+* `movie-updated.zip` is the updated save file, compatible with Factorio version 1.1.
+* `build.lua` is the original script with some modifications for migrations
+* `build.py` is the alternative method to generate blueprint strings instead of console commands
+
+Some parts of the original design have been changed due to migrations from the original version. Specifically, the `raw-wood` signal was changed to `artillery-wagon`.
 
 1. Install [FFmpeg](http://www.ffmpeg.org/download.html) and [Lua](http://lua-users.org/wiki/LuaBinaries) if you don't already have them.
 
