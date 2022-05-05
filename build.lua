@@ -3,15 +3,22 @@ local bottom_start = {-224.5, 138.5} -- Top left combinator
 
 local x_frame = {0,17,30,47,60,77}
 local y_wire = {
-1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,
-4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,
-1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,
-3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5}
-local y_shift = {1,1,1,8,8,8,64,64,64,512,512,512,4096,4096,4096,32768,32768,32768,262144,262144,262144,2097152,2097152,2097152,16777216,16777216,16777216,134217728,134217728,134217728,
-1,1,8,8,64,64,512,512,4096,4096,32768,32768,262144,262144,2097152,2097152,16777216,16777216,134217728,134217728,
-1,1,8,8,64,64,512,512,4096,4096,32768,32768,262144,262144,2097152,2097152,16777216,16777216,134217728,134217728,
-1,1,1,8,8,8,64,64,64,512,512,512,4096,4096,4096,32768,32768,32768,262144,262144,262144,2097152,2097152,2097152,16777216,16777216,16777216,134217728,134217728,134217728}
-local unix = io.popen('uname'):read()
+	1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,1,2,3,
+	4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,4,5,
+	1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,
+	3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5,3,4,5
+}
+local y_shift = {
+	1,1,1,8,8,8,64,64,64,512,512,512,4096,4096,4096,32768,32768,32768,262144,262144,262144,2097152,2097152,2097152,16777216,16777216,16777216,134217728,134217728,134217728,
+	1,1,8,8,64,64,512,512,4096,4096,32768,32768,262144,262144,2097152,2097152,16777216,16777216,134217728,134217728,
+	1,1,8,8,64,64,512,512,4096,4096,32768,32768,262144,262144,2097152,2097152,16777216,16777216,134217728,134217728,
+	1,1,1,8,8,8,64,64,64,512,512,512,4096,4096,4096,32768,32768,32768,262144,262144,262144,2097152,2097152,2097152,16777216,16777216,16777216,134217728,134217728,134217728
+}
+
+-- Im going to change this:
+--local unix = io.popen('uname'):read()
+-- To this, so I don't have Windows yell at me for a command that doesn't exist
+local unix = package.config:sub(1,1) == '/'
 
 function scanDir(dir, ext)
 	local files = {}
@@ -53,7 +60,7 @@ function LoadBitmap(file)
 	local bfType = ReadWORD(bytecode, offset);
 	if(bfType ~= 0x4D42) then
 		print("Not a bitmap file (Invalid BMP magic value)");
-		return;
+		return false;
 	end
 	local bfOffBits = ReadWORD(bytecode, offset+10);
 
@@ -65,20 +72,20 @@ function LoadBitmap(file)
 	local biCompression = ReadDWORD(bytecode, offset+16);
 	if(biBitCount ~= 24 and biBitCount ~= 32) then
 		print("Only 24-bit or 32-bit bitmaps supported (Is " .. biBitCount .. "bpp)");
-		return;
+		return false;
 	end
 	if(biCompression ~= 0) then
 		print("Only uncompressed bitmaps supported (Compression type is " .. biCompression .. ")");
-		return;
+		return false;
 	end
-	
+
 	-- Parse bitmap image
 	local pixels = {}
 	for y = biHeight-1, 0, -1 do
 		local rowLength = biWidth * biBitCount // 8
 		rowLength = rowLength + (4 - (rowLength % 4)) % 4
 		local offset = bfOffBits + rowLength*y + 1;
-		
+
 		for x = 1, biWidth do
 			local b = bytecode:byte(offset);
 			local g = bytecode:byte(offset+1);
@@ -95,7 +102,8 @@ function LoadBitmap(file)
 end
 
 function writeScriptHeader(file)
-	file:write("/c local signals = {{'wooden-chest','iron-chest','steel-chest','storage-tank','transport-belt','fast-transport-belt','express-transport-belt','underground-belt','fast-underground-belt','express-underground-belt','splitter','fast-splitter','express-splitter','burner-inserter','inserter'},{'long-handed-inserter','fast-inserter','filter-inserter','stack-inserter','stack-filter-inserter','small-electric-pole','medium-electric-pole','big-electric-pole','substation','pipe','pipe-to-ground','small-pump','car','tank','logistic-robot'},{'construction-robot','logistic-chest-active-provider','logistic-chest-passive-provider','logistic-chest-requester','logistic-chest-storage','roboport','red-wire','green-wire','arithmetic-combinator','decider-combinator','constant-combinator','power-switch','stone-brick','concrete','hazard-concrete'},{'repair-pack','boiler','small-lamp','solar-panel','accumulator','burner-mining-drill','electric-mining-drill','offshore-pump','pumpjack','stone-furnace','steel-furnace','electric-furnace','assembling-machine-1','assembling-machine-2','assembling-machine-3'},{'oil-refinery','chemical-plant','lab','beacon','speed-module','speed-module-2','speed-module-3','effectivity-module','effectivity-module-2','effectivity-module-3','productivity-module','productivity-module-2','productivity-module-3','solid-fuel','stone'},{'iron-ore','raw-fish','copper-ore','raw-wood','wood','coal','iron-plate','copper-plate','steel-plate','sulfur','plastic-bar','copper-cable','iron-stick','iron-gear-wheel','electronic-circuit'},{'advanced-circuit','processing-unit','engine-unit','electric-engine-unit','explosives','battery','flying-robot-frame','science-pack-1','science-pack-2','pistol','submachine-gun','shotgun','combat-shotgun','rocket-launcher','flame-thrower'},{'land-mine','firearm-magazine','piercing-rounds-magazine','shotgun-shell','piercing-shotgun-shell','cannon-shell','explosive-cannon-shell','rocket','explosive-rocket','flame-thrower-ammo','grenade','cluster-grenade','poison-capsule','slowdown-capsule','defender-capsule'},{'distractor-capsule','destroyer-capsule','light-armor','heavy-armor','modular-armor','power-armor','power-armor-mk2','solar-panel-equipment','energy-shield-equipment','energy-shield-mk2-equipment','battery-equipment','battery-mk2-equipment','personal-laser-defense-equipment','exoskeleton-equipment','personal-roboport-equipment'},{'night-vision-equipment','stone-wall','flamethrower-turret','gun-turret','laser-turret','radar','water','crude-oil','heavy-oil','light-oil','petroleum-gas','sulfuric-acid','lubricant','signal-0','signal-1'},{'signal-2','signal-3','signal-4','signal-5','signal-6','signal-7','signal-8','signal-9','signal-B','signal-C','signal-D','signal-E','signal-F','signal-G','signal-H'},{'signal-I','signal-J','signal-K','signal-L','signal-M','signal-N','signal-O','signal-P','signal-Q','signal-R','signal-S','signal-T','signal-U','signal-V','signal-W'}}; local get_type = function(n) local type = 'item'; if (n >= 157) then type = 'fluid' end; if (n >= 164) then type = 'virtual' end; return type end; local f = function(x, y, signal_set, ...) local combinator = game.player.surface.find_entities_filtered{name='constant-combinator',position={x,y}}[1]; local args = {...}; local parameters = {parameters={}}; for i = 1,15 do table.insert(parameters.parameters, {index=i, signal={type=get_type(signal_set*15+i), name=signals[signal_set][i]}, count=args[i]}) end; combinator.get_control_behavior().parameters = parameters end\n");
+	-- modified to resolve all different names as well as changed "raw-wood" to "artillery-wagon"
+	file:write("/c local signals = {{'wooden-chest','iron-chest','steel-chest','storage-tank','transport-belt','fast-transport-belt','express-transport-belt','underground-belt','fast-underground-belt','express-underground-belt','splitter','fast-splitter','express-splitter','burner-inserter','inserter'},{'long-handed-inserter','fast-inserter','filter-inserter','stack-inserter','stack-filter-inserter','small-electric-pole','medium-electric-pole','big-electric-pole','substation','pipe','pipe-to-ground','pump','car','tank','logistic-robot'},{'construction-robot','logistic-chest-active-provider','logistic-chest-passive-provider','logistic-chest-requester','logistic-chest-storage','roboport','red-wire','green-wire','arithmetic-combinator','decider-combinator','constant-combinator','power-switch','stone-brick','concrete','hazard-concrete'},{'repair-pack','boiler','small-lamp','solar-panel','accumulator','burner-mining-drill','electric-mining-drill','offshore-pump','pumpjack','stone-furnace','steel-furnace','electric-furnace','assembling-machine-1','assembling-machine-2','assembling-machine-3'},{'oil-refinery','chemical-plant','lab','beacon','speed-module','speed-module-2','speed-module-3','effectivity-module','effectivity-module-2','effectivity-module-3','productivity-module','productivity-module-2','productivity-module-3','solid-fuel','stone'},{'iron-ore','raw-fish','copper-ore','artillery-wagon','wood','coal','iron-plate','copper-plate','steel-plate','sulfur','plastic-bar','copper-cable','iron-stick','iron-gear-wheel','electronic-circuit'},{'advanced-circuit','processing-unit','engine-unit','electric-engine-unit','explosives','battery','flying-robot-frame','automation-science-pack','logistic-science-pack','pistol','submachine-gun','shotgun','combat-shotgun','rocket-launcher','flamethrower'},{'land-mine','firearm-magazine','piercing-rounds-magazine','shotgun-shell','piercing-shotgun-shell','cannon-shell','explosive-cannon-shell','rocket','explosive-rocket','flamethrower-ammo','grenade','cluster-grenade','poison-capsule','slowdown-capsule','defender-capsule'},{'distractor-capsule','destroyer-capsule','light-armor','heavy-armor','modular-armor','power-armor','power-armor-mk2','solar-panel-equipment','energy-shield-equipment','energy-shield-mk2-equipment','battery-equipment','battery-mk2-equipment','personal-laser-defense-equipment','exoskeleton-equipment','personal-roboport-equipment'},{'night-vision-equipment','stone-wall','flamethrower-turret','gun-turret','laser-turret','radar','water','crude-oil','heavy-oil','light-oil','petroleum-gas','sulfuric-acid','lubricant','signal-0','signal-1'},{'signal-2','signal-3','signal-4','signal-5','signal-6','signal-7','signal-8','signal-9','signal-B','signal-C','signal-D','signal-E','signal-F','signal-G','signal-H'},{'signal-I','signal-J','signal-K','signal-L','signal-M','signal-N','signal-O','signal-P','signal-Q','signal-R','signal-S','signal-T','signal-U','signal-V','signal-W'}}; local get_type = function(n) local type = 'item'; if (n >= 157) then type = 'fluid' end; if (n >= 164) then type = 'virtual' end; return type end; local f = function(x, y, signal_set, ...) local combinator = game.player.surface.find_entities_filtered{name='constant-combinator',position={x,y}}[1]; local args = {...}; local parameters = {}; for i = 1,15 do table.insert(parameters, {index=i, signal={type=get_type(signal_set*15+i), name=signals[signal_set][i]}, count=args[i]}) end; combinator.get_control_behavior().parameters = parameters end\n");
 end
 
 local c = 0
@@ -140,9 +148,14 @@ end
 local files = scanDir("images", "*.bmp")
 
 -- Process images
-for index,file in pairs(files) do
+total_frames = 0
+for index, file in pairs(files) do
 	print("processing "..file)
 	pixels = LoadBitmap(file)
+	if not pixels then
+		print("Exiting.")
+		return
+	end
 
 	local count = 0
 	for x = 1,178 do 
@@ -162,5 +175,7 @@ for index,file in pairs(files) do
 		end
 	end
 	writeCombinator()
+	total_frames = total_frames + 1
 end
 
+print("Total number of movie frames:", total_frames)

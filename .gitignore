@@ -1,0 +1,8 @@
+pyvenv.cfg
+script/*.txt
+sources/*
+images/*
+
+# Python venv
+Lib/
+Scripts/
