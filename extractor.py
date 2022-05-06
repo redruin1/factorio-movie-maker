@@ -1,3 +1,5 @@
+# extractor.py
+
 """
 Instead of using FFMPEG to extract the data, you can use this instead. It 
 operates in the exact same way, except might be a little more user friendly if

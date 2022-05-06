@@ -1,8 +1,16 @@
-pyvenv.cfg
+# movie-player
 script/*.txt
+!script/.gitignore
+
 sources/*
-images/*
+!sources/.gitignore
+
+images/*.bmp
+!images/.gitignore
+
+*.mp4
 
 # Python venv
 Lib/
 Scripts/
+pyvenv.cfg

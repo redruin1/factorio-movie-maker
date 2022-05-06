@@ -1,6 +1,8 @@
 # movie_player.py
 
 """
+README: currently unfinished, will work on later. For now, use `build.lua`
+
 Python script translation of `build.lua`. Assumes the images have already been
 extracted with FFMPEG or other. A little simpler, as this is more Python's forte
 than Lua's.

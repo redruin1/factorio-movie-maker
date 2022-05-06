@@ -140,6 +140,10 @@ end
 -- Load palette
 local palette = {}
 local pixels = LoadBitmap("palette.bmp")
+if not pixels then
+	print("Unabled to load 'palette.bmp'; Exiting.")
+	return
+end
 for i = 1,7 do
 	palette[pixels[i][1]] = i
 end
