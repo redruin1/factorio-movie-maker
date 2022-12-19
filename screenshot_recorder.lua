@@ -32,7 +32,7 @@ script.on_event(defines.events.on_tick, function(event)
             zoom=zoom,
             path=location_of_output .. "/" .. i - 6 .. ".png"
         };
-        i = i + 1;
     end
+    i = i + 1;
 end);
 game.ticks_to_run = frames_to_record + 7;
